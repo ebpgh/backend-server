@@ -13,7 +13,13 @@ var app = express();
 // ==========================
 app.get('/', (req, res, next) => {
 
+    var desde = req.query.desde || 0; // si no mandan el parámetro desde, la variable desde toma 0
+    desde = Number(desde);
+
     Usuario.find({}, 'role _id nombre email img')
+
+    .skip(desde)
+        .limit(5)
 
     .exec(
 
@@ -27,11 +33,15 @@ app.get('/', (req, res, next) => {
                 });
             }
 
-            res.status(200).json({
-                ok: true,
-                usuarios: usuarios
-            });
+            Usuario.count({}, (err, total) => {
 
+                res.status(200).json({
+                    ok: true,
+                    usuarios: usuarios,
+                    total: total
+                });
+
+            });
         });
 
     /*     //respuesta a la solicitud
