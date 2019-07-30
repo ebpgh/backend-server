@@ -4,7 +4,7 @@ var jwt = require('jsonwebtoken');
 var Usuario = require('../models/usuario');
 var SEED = require('../config/config').SEED;
 
-<<<<<<< HEAD
+
 // google
 var CLIENT_ID = require('../config/config').CLIENT_ID;
 const { OAuth2Client } = require('google-auth-library'); // La estructura {OAuth2Client}  extrae
@@ -135,10 +135,10 @@ app.post('/google', async(req, res) => {
 //==================================================
 // Autenticación normal
 // =================================================
-=======
+
 var app = express();
 
->>>>>>> a6c0b89026ff9a93c41efd3d3b1fa4d5c6809d43
+
 app.post('/', (req, res) => {
 
     var body = req.body;
