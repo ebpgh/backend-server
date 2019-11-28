@@ -15,6 +15,57 @@ const client = new OAuth2Client(CLIENT_ID);
 var app = express();
 
 //==================================================
+// Autenticación normal
+// =================================================
+
+app.post('/', (req, res) => {
+
+    var body = req.body;
+
+    Usuario.findOne({ email: body.email }, (err, usuarioDB) => {
+
+        if (err) {
+            return res.status(500).json({
+                ok: false,
+                mensaje: 'Error al buscar usuario',
+                errors: err
+            });
+        }
+
+        if (!usuarioDB) {
+            return res.status(400).json({
+                ok: false,
+                mensaje: 'Credenciales incorrectas - email',
+                errors: err
+            });
+        }
+
+        if (!bcrypt.compareSync(body.password, usuarioDB.password)) {
+            return res.status(400).json({
+                ok: false,
+                mensaje: 'Credenciales incorrectas - password',
+                errors: err
+            });
+        }
+
+        // Crear tocken
+        usuarioDB.password = ':)';
+        var token = jwt.sign({ usuario: usuarioDB }, SEED, { expiresIn: 14400 }); // expira en 4 horas
+
+        res.status(200).json({
+            ok: true,
+            mensaje: 'Credenciales correctas - OK',
+            usuario: usuarioDB,
+            token: token,
+            id: usuarioDB._id
+        });
+
+    });
+
+});
+
+
+//==================================================
 // Autenticación google
 // =================================================
 
@@ -30,7 +81,7 @@ async function verify(token) {
     //const userid = payload['sub'];
     // If request specified a G Suite domain:
     //const domain = payload['hd'];
-
+    
     return {
         nombre: payload.name,
         email: payload.email,
@@ -38,10 +89,9 @@ async function verify(token) {
         google: true,
         payload
     }
-
+    
 }
-
-verify().catch(console.error);
+/* verify().catch(console.error);  */
 
 // Es obligatorio que la función sea async para usar el await (esperar)
 
@@ -53,10 +103,12 @@ app.post('/google', async(req, res) => {
         .catch(e => {
             return res.status(403).json({
                 ok: false,
-                mensaje: 'Tocken que no vale'
+                mensaje: 'Tocken no válido'
             });
 
         });
+
+        console.log('googleUser',googleUser);
 
         Usuario.findOne({email:googleUser.email}, (err, usuarioDB) => {
 
@@ -131,66 +183,6 @@ app.post('/google', async(req, res) => {
         googleUser: googleUser
     });  */
 });
-
-//==================================================
-// Autenticación normal
-// =================================================
-
-var app = express();
-
-
-app.post('/', (req, res) => {
-
-    var body = req.body;
-
-    Usuario.findOne({ email: body.email }, (err, usuarioDB) => {
-
-        if (err) {
-            return res.status(500).json({
-                ok: false,
-                mensaje: 'Error al buscar usuario',
-                errors: err
-            });
-        }
-
-        if (!usuarioDB) {
-            return res.status(400).json({
-                ok: false,
-                mensaje: 'Credenciales incorrectas - email',
-                errors: err
-            });
-        }
-
-        if (!bcrypt.compareSync(body.password, usuarioDB.password)) {
-            return res.status(400).json({
-                ok: false,
-                mensaje: 'Credenciales incorrectas - password',
-                errors: err
-            });
-        }
-
-        // Crear tocken
-        usuarioDB.password = ':)';
-        var token = jwt.sign({ usuario: usuarioDB }, SEED, { expiresIn: 14400 }); // expira en 4 horas
-
-        res.status(200).json({
-            ok: true,
-            usuario: usuarioDB,
-            token: token,
-            id: usuarioDB._id
-        });
-
-    });
-
-
-
-
-});
-
-
-
-
-
 
 
 module.exports = app;

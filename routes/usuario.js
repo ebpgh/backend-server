@@ -16,7 +16,7 @@ app.get('/', (req, res, next) => {
     var desde = req.query.desde || 0; // si no mandan el parámetro desde, la variable desde toma 0
     desde = Number(desde);
 
-    Usuario.find({}, 'role _id nombre email img')
+    Usuario.find({}, 'role _id nombre email img google')
 
     .skip(desde)
         .limit(5)
@@ -132,7 +132,12 @@ app.put('/:id', mdAutenticacion.verificaToken, (req, res) => {
 // ==========================
 // Crear un usuario
 // ==========================
-app.post('/', mdAutenticacion.verificaToken, (req, res) => {
+
+// A la función post le quitamos la verificacion del token para que cualquiera,
+// un usuario no registrado, pueda crear un usuario
+//app.post('/', mdAutenticacion.verificaToken, (req, res) => {
+
+app.post('/', (req, res) => {
 
     var body = req.body;
 
