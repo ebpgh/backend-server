@@ -11,8 +11,40 @@ const { OAuth2Client } = require('google-auth-library'); // La estructura {OAuth
 // OAuth2Client  de la librería google-auth-library
 const client = new OAuth2Client(CLIENT_ID);
 
+var mdAutenticacion = require('../middleware/autenticacion');
+
 
 var app = express();
+
+//==================================================
+// Renovar token
+//=================================================
+
+// antes de renovar el token hay que comprobar que el actual es válido
+
+app.get('/renuevatoken', mdAutenticacion.verificaToken, (req, res) => {
+
+    // Si no hay error, el token es válido el programa continuará por aquí, status 200,
+    // y ahora a renovar el token:
+    var token = jwt.sign({ usuario: req.usuario }, SEED, { expiresIn: 14400 }); // expira en 4 horas
+
+
+    // respuesta status(200) y nuevo token:
+
+    res.status(200).json({
+        ok: true,
+        token: token
+    });
+
+    
+
+
+});
+
+
+
+
+
 
 //==================================================
 // Autenticación normal
@@ -57,7 +89,9 @@ app.post('/', (req, res) => {
             mensaje: 'Credenciales correctas - OK',
             usuario: usuarioDB,
             token: token,
-            id: usuarioDB._id
+            id: usuarioDB._id,
+            menu: obtenerMenu( usuarioDB.role)
+
         });
 
     });
@@ -140,7 +174,8 @@ app.post('/google', async(req, res) => {
                         mensaje: 'Usuario validado correctamente con su cta google',
                         usuario: usuarioDB,
                         token: token,
-                        id: usuarioDB._id
+                        id: usuarioDB._id,
+                        menu: obtenerMenu( usuarioDB.role)
                     });
                 }
 
@@ -164,7 +199,8 @@ app.post('/google', async(req, res) => {
                         ok: true,
                         usuario: usuarioDB,
                         token: token,
-                        id: usuarioDB._id
+                        id: usuarioDB._id,
+                        menu: obtenerMenu( usuarioDB.role)
                     });
 
                 })
@@ -183,6 +219,41 @@ app.post('/google', async(req, res) => {
         googleUser: googleUser
     });  */
 });
+
+function obtenerMenu( ROLE) {
+
+  var menu = [
+    {
+      titulo: 'Principal',
+      icono: 'mdi mdi-gauge',
+      submenu: [
+        { titulo: 'Dashboard', url: '/dashboard'},
+        { titulo: 'ProgressBar', url: '/progress'},
+        { titulo: 'Gráficas', url: '/graficas1'},
+        { titulo: 'Promesas', url: '/promesas'},
+        { titulo: 'RxJs', url: '/rxjs'}
+      ]
+    },
+    {
+      titulo: 'Mantenimientos',
+      icono: 'mdi mdi-folder-lock-open',
+      submenu: [
+        // { titulo: 'Usuarios', url: '/usuarios'},
+        { titulo: 'Hospitales', url: '/hospitales'},
+        { titulo: 'Médicos', url: '/medicos'}
+      ]
+    }
+  ];
+
+  if (ROLE ==='ADMIN_ROLE') {
+      // si el rol del usuario conectado es administrador, se añade al array del menú la opción de
+      // mto de usuarios. Se usa unshift en vez de push porque push agrega al final y unshift al ppio.
+      menu[1].submenu.unshift( { titulo: 'Usuarios', url: '/usuarios'} );
+  }
+
+  return menu;
+
+}
 
 
 module.exports = app;

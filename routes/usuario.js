@@ -77,7 +77,10 @@ app.use('/', (req, res, next) => {
 // ==========================
 // Actualizar un usuario
 // ==========================
-app.put('/:id', mdAutenticacion.verificaToken, (req, res) => {
+app.put('/:id', [ mdAutenticacion.verificaToken, mdAutenticacion.verificaADMIN_o_mismoUsuario ], (req, res) => {
+
+    // [ mdAutenticacion.verificaToken, mdAutenticacion.verificaADMIN_o_mismoUsuario ] es el middleware que permite incluir condiciones,
+    // se puede poner una condición (sin los corchetes) o varias (enytre corchetes).
 
     var id = req.params.id;
     var body = req.body;
@@ -173,7 +176,11 @@ app.post('/', (req, res) => {
 // Borrar un usuario
 // ==========================
 
-app.delete('/:id', mdAutenticacion.verificaToken, (req, res) => {
+app.delete('/:id', [ mdAutenticacion.verificaToken, mdAutenticacion.verificaADMIN ], (req, res) => {
+
+    // [ mdAutenticacion.verificaToken, mdAutenticacion.verificaADMIN ] es el middleware que permite incluir condiciones,
+    // se puede poner una condición (sin los corchetes) o varias (enytre corchetes).
+
     var id = req.params.id;
 
     Usuario.findByIdAndRemove(id, (err, usuarioBorrado) => {
